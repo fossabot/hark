@@ -12,6 +12,7 @@
 ## Features
 
 - 🎙️ **Record** - Press space to start, Ctrl+C to stop
+- 🔊 **Multi-source** - Capture microphone, system audio, or both
 - ✨ **Transcribe** - Powered by [faster-whisper](https://github.com/SYSTRAN/faster-whisper)
 - 🔒 **Local** - 100% offline, no cloud required
 - 📄 **Flexible** - Output as plain text, markdown, or SRT subtitles
@@ -65,6 +66,12 @@ hark --lang de notes.txt
 
 # Output as SRT subtitles
 hark --format srt captions.srt
+
+# Capture system audio (e.g., online meetings)
+hark --input speaker meeting.txt
+
+# Capture both microphone and system audio (stereo: L=mic, R=speaker)
+hark --input both conversation.txt
 ```
 
 ## Configuration
@@ -73,6 +80,12 @@ Hark uses a YAML config file at `~/.config/hark/config.yaml`. CLI flags override
 
 ```yaml
 # ~/.config/hark/config.yaml
+recording:
+  sample_rate: 16000
+  channels: 1 # Use 2 for --input both
+  max_duration: 600
+  input_source: mic # mic, speaker, or both
+
 whisper:
   model: base # tiny, base, small, medium, large, large-v2, large-v3
   language: auto # auto, en, de, fr, es, ...
@@ -91,6 +104,36 @@ output:
   format: plain # plain, markdown, srt
   timestamps: false
 ```
+
+## Audio Input Sources
+
+Hark supports three input modes via `--input` or `recording.input_source`:
+
+| Mode | Description |
+|------|-------------|
+| `mic` | Microphone only (default) |
+| `speaker` | System audio only (loopback capture) |
+| `both` | Microphone + system audio as stereo (L=mic, R=speaker) |
+
+### System Audio Capture (Linux)
+
+System audio capture uses PulseAudio/PipeWire monitor sources. To verify your system supports it:
+
+```bash
+pactl list sources | grep -i monitor
+```
+
+You should see output like:
+```
+Name: alsa_output.pci-0000_00_1f.3.analog-stereo.monitor
+Description: Monitor of Built-in Audio
+```
+
+### Use Cases
+
+- **Online meetings**: Use `--input speaker` to transcribe remote participants
+- **Conversations**: Use `--input both` to capture both sides for future diarization
+- **Voice notes**: Use `--input mic` (default) for personal dictation
 
 ## Development
 

@@ -67,6 +67,13 @@ Examples:
     # Recording options
     recording = parser.add_argument_group("Recording Options")
     recording.add_argument(
+        "--input",
+        dest="input_source",
+        choices=["mic", "speaker", "both"],
+        metavar="SOURCE",
+        help="Audio input source: mic (default), speaker (system audio), or both (stereo)",
+    )
+    recording.add_argument(
         "--max-duration",
         type=int,
         metavar="SECONDS",
@@ -217,6 +224,7 @@ def _record_audio(ui: UI, config: HarkConfig) -> tuple[Path, float] | None:
         max_duration=config.recording.max_duration,
         level_callback=level_callback,
         temp_dir=config.temp_directory,
+        input_source=config.recording.input_source,
     )
 
     ui.info("")  # New line after prompt
@@ -230,6 +238,7 @@ def _record_audio(ui: UI, config: HarkConfig) -> tuple[Path, float] | None:
                     elapsed=recorder.get_duration(),
                     max_duration=config.recording.max_duration,
                     level=current_level[0],
+                    input_source=config.recording.input_source,
                 )
                 time.sleep(0.05)
                 keys.get_key(timeout=0.01)

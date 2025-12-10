@@ -82,8 +82,20 @@ class UI:
         if self._quiet:
             return
 
+        # Format input source display
+        input_source_labels = {
+            "mic": "Microphone",
+            "speaker": "System Audio",
+            "both": "Microphone + System Audio (stereo)",
+        }
+        input_label = input_source_labels.get(
+            config.recording.input_source,
+            config.recording.input_source,
+        )
+
         print()
         print("Configuration:")
+        print(f"  - Input: {input_label}")
         print(f"  - Language: {config.whisper.language}")
         print(f"  - Model: {config.whisper.model}")
         print(f"  - Output: {output_file or 'stdout'}")
@@ -108,7 +120,13 @@ class UI:
         ctrl_c = self._color("Ctrl+C", Color.YELLOW)
         print(f"\nPress {space} to start recording, {ctrl_c} to cancel...")
 
-    def recording_status(self, elapsed: float, max_duration: float, level: float) -> None:
+    def recording_status(
+        self,
+        elapsed: float,
+        max_duration: float,
+        level: float,
+        input_source: str = "mic",
+    ) -> None:
         """
         Update recording status display.
 
@@ -116,6 +134,7 @@ class UI:
             elapsed: Elapsed recording time in seconds.
             max_duration: Maximum recording duration in seconds.
             level: Audio level (0.0-1.0).
+            input_source: Input source mode ("mic", "speaker", or "both").
         """
         if self._quiet:
             return
@@ -137,12 +156,20 @@ class UI:
         # Time display
         time_str = f"{self._format_duration(elapsed)} / {self._format_duration(max_duration)}"
 
-        # Recording indicator
-        rec_indicator = self._color("\u25cf", Color.RED)
+        # Recording indicator and label based on input source
+        if input_source == "both":
+            rec_indicator = self._color("\u25cf", Color.MAGENTA)
+            rec_label = "Recording (mic+speaker)..."
+        elif input_source == "speaker":
+            rec_indicator = self._color("\u25cf", Color.CYAN)
+            rec_label = "Recording (speaker)..."
+        else:
+            rec_indicator = self._color("\u25cf", Color.RED)
+            rec_label = "Recording..."
 
         # Build output
         lines = [
-            f"{rec_indicator} Recording... {time_str} {bar}",
+            f"{rec_indicator} {rec_label} {time_str} {bar}",
             f"  Audio Level: {level_meter} ({level_pct:3d}%)",
         ]
 

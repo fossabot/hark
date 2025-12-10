@@ -29,6 +29,7 @@ from hark.config import (
 from hark.constants import (
     DEFAULT_CHANNELS,
     DEFAULT_CONFIG_PATH,
+    DEFAULT_INPUT_SOURCE,
     DEFAULT_LANGUAGE,
     DEFAULT_MAX_DURATION,
     DEFAULT_MODEL,
@@ -47,6 +48,7 @@ class TestDataclassDefaults:
         assert config.sample_rate == DEFAULT_SAMPLE_RATE
         assert config.channels == DEFAULT_CHANNELS
         assert config.max_duration == DEFAULT_MAX_DURATION
+        assert config.input_source == DEFAULT_INPUT_SOURCE
 
     def test_whisper_config_defaults(self) -> None:
         """WhisperConfig should have correct default values."""
@@ -252,6 +254,22 @@ class TestMergeCliArgs:
         assert config.recording.sample_rate == 44100
         assert config.whisper.model == "large-v3"
 
+    def test_input_source_override(
+        self, default_config: HarkConfig, empty_cli_args_namespace: argparse.Namespace
+    ) -> None:
+        """Input source CLI arg should override config."""
+        empty_cli_args_namespace.input_source = "speaker"
+        config = merge_cli_args(default_config, empty_cli_args_namespace)
+        assert config.recording.input_source == "speaker"
+
+    def test_input_source_none_preserves_default(
+        self, default_config: HarkConfig, empty_cli_args_namespace: argparse.Namespace
+    ) -> None:
+        """None input_source arg should preserve config value."""
+        empty_cli_args_namespace.input_source = None
+        config = merge_cli_args(default_config, empty_cli_args_namespace)
+        assert config.recording.input_source == "mic"
+
 
 class TestValidateConfig:
     """Tests for validate_config function."""
@@ -343,6 +361,39 @@ class TestValidateConfig:
         errors = validate_config(default_config)
         assert len(errors) >= 1
         assert any("format" in e.lower() for e in errors)
+
+    def test_invalid_input_source(self, default_config: HarkConfig) -> None:
+        """Invalid input source should produce error."""
+        default_config.recording.input_source = "invalid"
+        errors = validate_config(default_config)
+        assert len(errors) >= 1
+        assert any("input" in e.lower() and "source" in e.lower() for e in errors)
+
+    def test_valid_input_sources(self, default_config: HarkConfig) -> None:
+        """Valid input sources should not produce errors."""
+        for source in ["mic", "speaker", "both"]:
+            default_config.recording.input_source = source
+            if source == "both":
+                default_config.recording.channels = 2
+            else:
+                default_config.recording.channels = 1
+            errors = validate_config(default_config)
+            assert errors == [], f"Unexpected errors for input_source={source}: {errors}"
+
+    def test_both_mode_requires_stereo(self, default_config: HarkConfig) -> None:
+        """Input source 'both' should require channels=2."""
+        default_config.recording.input_source = "both"
+        default_config.recording.channels = 1
+        errors = validate_config(default_config)
+        assert len(errors) >= 1
+        assert any("channel" in e.lower() for e in errors)
+
+    def test_both_mode_with_stereo_valid(self, default_config: HarkConfig) -> None:
+        """Input source 'both' with channels=2 should be valid."""
+        default_config.recording.input_source = "both"
+        default_config.recording.channels = 2
+        errors = validate_config(default_config)
+        assert errors == []
 
     def test_multiple_errors(self, default_config: HarkConfig) -> None:
         """Multiple issues should produce multiple errors."""
@@ -466,3 +517,18 @@ class TestConfigYamlParsing:
         config = load_config(config_file)
         # Path should be expanded
         assert "~" not in str(config.model_cache_dir)
+
+    def test_parses_input_source(self, tmp_path: Path) -> None:
+        """Should parse input_source from YAML."""
+        config_file = tmp_path / "config.yaml"
+        config_file.write_text("recording:\n  input_source: speaker")
+        config = load_config(config_file)
+        assert config.recording.input_source == "speaker"
+
+    def test_parses_input_source_both(self, tmp_path: Path) -> None:
+        """Should parse input_source 'both' from YAML."""
+        config_file = tmp_path / "config.yaml"
+        config_file.write_text("recording:\n  input_source: both\n  channels: 2")
+        config = load_config(config_file)
+        assert config.recording.input_source == "both"
+        assert config.recording.channels == 2

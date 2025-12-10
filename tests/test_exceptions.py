@@ -12,6 +12,7 @@ from hark.exceptions import (
     InsufficientDiskSpaceError,
     ModelDownloadError,
     ModelNotFoundError,
+    NoLoopbackDeviceError,
     NoMicrophoneError,
     OutputError,
     PreprocessingError,
@@ -50,6 +51,10 @@ class TestExceptionHierarchy:
     def test_audio_device_busy_inherits_audio_error(self) -> None:
         """AudioDeviceBusyError should inherit from AudioError."""
         assert issubclass(AudioDeviceBusyError, AudioError)
+
+    def test_no_loopback_inherits_audio_error(self) -> None:
+        """NoLoopbackDeviceError should inherit from AudioError."""
+        assert issubclass(NoLoopbackDeviceError, AudioError)
 
     def test_recording_too_short_inherits_audio_error(self) -> None:
         """RecordingTooShortError should inherit from AudioError."""
@@ -178,6 +183,18 @@ class TestAllExceptionsInstantiable:
         err = NoMicrophoneError("No mic")
         assert str(err) == "No mic"
 
+    def test_no_loopback_instantiation(self) -> None:
+        """NoLoopbackDeviceError should be instantiable."""
+        err = NoLoopbackDeviceError("No loopback")
+        assert str(err) == "No loopback"
+
+    def test_no_loopback_default_message(self) -> None:
+        """NoLoopbackDeviceError should have helpful default message."""
+        err = NoLoopbackDeviceError()
+        message = str(err)
+        assert "loopback" in message.lower()
+        assert "pactl" in message or "PulseAudio" in message
+
     def test_audio_device_busy_instantiation(self) -> None:
         """AudioDeviceBusyError should be instantiable."""
         err = AudioDeviceBusyError("Device busy")
@@ -226,6 +243,7 @@ class TestExceptionRaising:
             ConfigValidationError(["test"]),
             AudioError("test"),
             NoMicrophoneError("test"),
+            NoLoopbackDeviceError("test"),
             AudioDeviceBusyError("test"),
             RecordingTooShortError("test"),
             PreprocessingError("test"),

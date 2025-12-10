@@ -51,6 +51,35 @@ class TestCreateParser:
         assert args.sample_rate == 48000
         assert args.channels == 2
 
+    def test_input_source_option(self) -> None:
+        """--input option should be parsed correctly."""
+        parser = create_parser()
+
+        # Test mic (default)
+        args = parser.parse_args(["--input", "mic"])
+        assert args.input_source == "mic"
+
+        # Test speaker
+        args = parser.parse_args(["--input", "speaker"])
+        assert args.input_source == "speaker"
+
+        # Test both
+        args = parser.parse_args(["--input", "both"])
+        assert args.input_source == "both"
+
+    def test_input_source_invalid_rejected(self) -> None:
+        """Invalid --input value should be rejected."""
+        parser = create_parser()
+
+        with pytest.raises(SystemExit):
+            parser.parse_args(["--input", "invalid"])
+
+    def test_input_source_default_none(self) -> None:
+        """--input should default to None (not specified)."""
+        parser = create_parser()
+        args = parser.parse_args([])
+        assert args.input_source is None
+
     def test_language_options(self) -> None:
         """Language options should be parsed correctly."""
         parser = create_parser()

@@ -9,7 +9,8 @@ import numpy as np
 import pytest
 import sounddevice as sd
 
-from hark.exceptions import AudioDeviceBusyError, NoMicrophoneError
+from hark.audio_sources import AudioSourceInfo, InputSource
+from hark.exceptions import AudioDeviceBusyError, NoLoopbackDeviceError, NoMicrophoneError
 from hark.recorder import AudioRecorder
 
 
@@ -48,6 +49,21 @@ class TestAudioRecorderInit:
         callback = MagicMock()
         recorder = AudioRecorder(level_callback=callback)
         assert recorder._level_callback is callback
+
+    def test_input_source_default(self) -> None:
+        """Default input_source should be 'mic'."""
+        recorder = AudioRecorder()
+        assert recorder._input_source == InputSource.MIC
+
+    def test_input_source_speaker(self) -> None:
+        """Should accept 'speaker' input_source."""
+        recorder = AudioRecorder(input_source="speaker")
+        assert recorder._input_source == InputSource.SPEAKER
+
+    def test_input_source_both(self) -> None:
+        """Should accept 'both' input_source."""
+        recorder = AudioRecorder(input_source="both")
+        assert recorder._input_source == InputSource.BOTH
 
 
 class TestAudioRecorderStart:
@@ -508,3 +524,123 @@ class TestCleanup:
         # Should not raise
         recorder._cleanup()
         assert recorder._stream is None
+
+
+class TestMultiSourceRecording:
+    """Tests for multi-source recording (speaker and both modes)."""
+
+    def test_speaker_mode_no_loopback_raises_error(self, tmp_path: Path) -> None:
+        """Speaker mode should raise NoLoopbackDeviceError when no loopback available."""
+        recorder = AudioRecorder(temp_dir=tmp_path, input_source="speaker")
+
+        with patch(
+            "hark.recorder.validate_source_availability",
+            return_value=["No system audio loopback device found"],
+        ):
+            with pytest.raises(NoLoopbackDeviceError):
+                recorder.start()
+
+    def test_speaker_mode_uses_loopback_device(self, tmp_path: Path) -> None:
+        """Speaker mode should use loopback device."""
+        mock_loopback = AudioSourceInfo(
+            device_index=None,
+            name="Monitor",
+            channels=2,
+            sample_rate=44100,
+            is_loopback=True,
+            pulse_source_name="test.monitor",
+        )
+
+        recorder = AudioRecorder(temp_dir=tmp_path, input_source="speaker")
+
+        with (
+            patch("hark.recorder.validate_source_availability", return_value=[]),
+            patch(
+                "hark.recorder.get_devices_for_source",
+                return_value=(None, mock_loopback),
+            ),
+            patch("sounddevice.InputStream") as mock_stream_cls,
+            patch("soundfile.SoundFile"),
+            patch.dict("os.environ", {}, clear=False),
+        ):
+            mock_stream = MagicMock()
+            mock_stream_cls.return_value = mock_stream
+
+            recorder.start()
+
+            # Should use 'pulse' device for PulseAudio loopback
+            call_kwargs = mock_stream_cls.call_args[1]
+            assert call_kwargs["device"] == "pulse"
+
+        recorder.stop()
+
+    def test_both_mode_starts_dual_streams(self, tmp_path: Path) -> None:
+        """Both mode should start two streams."""
+        mock_mic = AudioSourceInfo(
+            device_index=0,
+            name="Mic",
+            channels=1,
+            sample_rate=16000,
+            is_loopback=False,
+        )
+        mock_loopback = AudioSourceInfo(
+            device_index=None,
+            name="Monitor",
+            channels=2,
+            sample_rate=44100,
+            is_loopback=True,
+            pulse_source_name="test.monitor",
+        )
+
+        recorder = AudioRecorder(
+            temp_dir=tmp_path, input_source="both", channels=2, sample_rate=16000
+        )
+
+        with (
+            patch("hark.recorder.validate_source_availability", return_value=[]),
+            patch(
+                "hark.recorder.get_devices_for_source",
+                return_value=(mock_mic, mock_loopback),
+            ),
+            patch("sounddevice.InputStream") as mock_stream_cls,
+            patch("soundfile.SoundFile"),
+            patch.dict("os.environ", {}, clear=False),
+        ):
+            mock_stream = MagicMock()
+            mock_stream_cls.return_value = mock_stream
+
+            recorder.start()
+
+            # Should create two streams (mic and speaker)
+            assert mock_stream_cls.call_count == 2
+
+        recorder.stop()
+
+    def test_both_mode_validates_both_devices(self, tmp_path: Path) -> None:
+        """Both mode should validate mic and loopback availability."""
+        recorder = AudioRecorder(temp_dir=tmp_path, input_source="both", channels=2)
+
+        with patch(
+            "hark.recorder.validate_source_availability",
+            return_value=["No microphone device found"],
+        ):
+            with pytest.raises(NoMicrophoneError):
+                recorder.start()
+
+    def test_cleanup_handles_dual_streams(self, tmp_path: Path) -> None:
+        """Cleanup should handle both mic and speaker streams."""
+        recorder = AudioRecorder(temp_dir=tmp_path, input_source="both", channels=2)
+
+        mock_mic_stream = MagicMock()
+        mock_speaker_stream = MagicMock()
+        recorder._mic_stream = mock_mic_stream
+        recorder._speaker_stream = mock_speaker_stream
+
+        recorder._cleanup()
+
+        mock_mic_stream.stop.assert_called_once()
+        mock_mic_stream.close.assert_called_once()
+        mock_speaker_stream.stop.assert_called_once()
+        mock_speaker_stream.close.assert_called_once()
+        assert recorder._mic_stream is None
+        assert recorder._speaker_stream is None

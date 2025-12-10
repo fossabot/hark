@@ -7,6 +7,7 @@ __all__ = [
     "ConfigValidationError",
     "AudioError",
     "NoMicrophoneError",
+    "NoLoopbackDeviceError",
     "AudioDeviceBusyError",
     "RecordingTooShortError",
     "PreprocessingError",
@@ -54,6 +55,19 @@ class NoMicrophoneError(AudioError):
     """No microphone detected."""
 
     pass
+
+
+class NoLoopbackDeviceError(AudioError):
+    """No system audio loopback device found."""
+
+    def __init__(self, message: str | None = None) -> None:
+        default_msg = (
+            "No system audio loopback device found.\n\n"
+            "On Linux with PulseAudio, ensure a monitor source is available:\n"
+            "  $ pactl list sources | grep -i monitor\n\n"
+            "On PipeWire, monitor sources should be automatically available."
+        )
+        super().__init__(message or default_msg)
 
 
 class AudioDeviceBusyError(AudioError):

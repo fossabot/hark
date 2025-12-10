@@ -32,6 +32,7 @@ from hark.constants import (
     DEFAULT_CONFIG_DIR,
     DEFAULT_CONFIG_PATH,
     DEFAULT_ENCODING,
+    DEFAULT_INPUT_SOURCE,
     DEFAULT_LANGUAGE,
     DEFAULT_MAX_DURATION,
     DEFAULT_MIN_SILENCE_DURATION,
@@ -43,6 +44,7 @@ from hark.constants import (
     DEFAULT_SILENCE_THRESHOLD_DB,
     DEFAULT_TARGET_LEVEL_DB,
     DEFAULT_TEMP_DIR,
+    VALID_INPUT_SOURCES,
     VALID_MODELS,
     VALID_OUTPUT_FORMATS,
 )
@@ -56,6 +58,7 @@ class RecordingConfig:
     sample_rate: int = DEFAULT_SAMPLE_RATE
     channels: int = DEFAULT_CHANNELS
     max_duration: int = DEFAULT_MAX_DURATION
+    input_source: str = DEFAULT_INPUT_SOURCE
 
 
 @dataclass
@@ -148,6 +151,7 @@ def _dict_to_config(data: dict[str, Any]) -> HarkConfig:
             sample_rate=rec.get("sample_rate", DEFAULT_SAMPLE_RATE),
             channels=rec.get("channels", DEFAULT_CHANNELS),
             max_duration=rec.get("max_duration", DEFAULT_MAX_DURATION),
+            input_source=rec.get("input_source", DEFAULT_INPUT_SOURCE),
         )
 
     if "whisper" in data:
@@ -261,6 +265,8 @@ def merge_cli_args(config: HarkConfig, args: argparse.Namespace) -> HarkConfig:
         config.recording.sample_rate = args.sample_rate
     if getattr(args, "channels", None) is not None:
         config.recording.channels = args.channels
+    if getattr(args, "input_source", None) is not None:
+        config.recording.input_source = args.input_source
 
     # Whisper options
     if getattr(args, "lang", None) is not None:
@@ -316,6 +322,13 @@ def validate_config(config: HarkConfig) -> list[str]:
         errors.append(f"Channels must be 1 or 2, got {config.recording.channels}")
     if config.recording.max_duration <= 0:
         errors.append(f"Max duration must be positive, got {config.recording.max_duration}")
+    if config.recording.input_source not in VALID_INPUT_SOURCES:
+        errors.append(
+            f"Invalid input source '{config.recording.input_source}'. "
+            f"Valid options: {', '.join(VALID_INPUT_SOURCES)}"
+        )
+    if config.recording.input_source == "both" and config.recording.channels != 2:
+        errors.append("Channels must be 2 when input_source is 'both' (stereo: L=mic, R=speaker)")
 
     # Whisper validation
     if config.whisper.model not in VALID_MODELS:
@@ -375,6 +388,7 @@ recording:
   sample_rate: 16000
   channels: 1
   max_duration: 600  # 10 minutes
+  input_source: mic  # mic, speaker, or both
 
 # Whisper Model Settings
 whisper:

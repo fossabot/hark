@@ -163,6 +163,33 @@ class TestUIOutput:
         captured = capsys.readouterr()
         assert "stdout" in captured.out
 
+    def test_config_summary_shows_input_source(
+        self, ui: UI, default_config: HarkConfig, capsys
+    ) -> None:
+        """config_summary should show input source."""
+        ui.config_summary(default_config, None)
+        captured = capsys.readouterr()
+        assert "Input" in captured.out
+        assert "Microphone" in captured.out
+
+    def test_config_summary_shows_speaker_input(
+        self, ui: UI, default_config: HarkConfig, capsys
+    ) -> None:
+        """config_summary should show 'System Audio' for speaker mode."""
+        default_config.recording.input_source = "speaker"
+        ui.config_summary(default_config, None)
+        captured = capsys.readouterr()
+        assert "System Audio" in captured.out
+
+    def test_config_summary_shows_both_input(
+        self, ui: UI, default_config: HarkConfig, capsys
+    ) -> None:
+        """config_summary should show both sources for 'both' mode."""
+        default_config.recording.input_source = "both"
+        ui.config_summary(default_config, None)
+        captured = capsys.readouterr()
+        assert "Microphone" in captured.out and "System Audio" in captured.out
+
     def test_error_always_prints(self, capsys) -> None:
         """error should print even in quiet mode."""
         ui = UI(quiet=True, use_color=False)
@@ -229,6 +256,25 @@ class TestUIRecordingStatus:
         ui.recording_status(30.0, 60.0, -0.5)
         captured = capsys.readouterr()
         assert "0%" in captured.out
+
+    def test_recording_status_mic_mode(self, ui: UI, capsys) -> None:
+        """recording_status should show 'Recording...' for mic mode."""
+        ui.recording_status(30.0, 60.0, 0.5, input_source="mic")
+        captured = capsys.readouterr()
+        assert "Recording..." in captured.out
+        assert "speaker" not in captured.out.lower()
+
+    def test_recording_status_speaker_mode(self, ui: UI, capsys) -> None:
+        """recording_status should indicate speaker mode."""
+        ui.recording_status(30.0, 60.0, 0.5, input_source="speaker")
+        captured = capsys.readouterr()
+        assert "speaker" in captured.out.lower()
+
+    def test_recording_status_both_mode(self, ui: UI, capsys) -> None:
+        """recording_status should indicate both mode."""
+        ui.recording_status(30.0, 60.0, 0.5, input_source="both")
+        captured = capsys.readouterr()
+        assert "mic" in captured.out.lower() and "speaker" in captured.out.lower()
 
 
 class TestUITranscriptionProgress:
