@@ -1,7 +1,7 @@
-"""Custom exceptions for mrec-cli."""
+"""Custom exceptions for hark."""
 
 __all__ = [
-    "MrecError",
+    "HarkError",
     "ConfigError",
     "ConfigNotFoundError",
     "ConfigValidationError",
@@ -18,13 +18,13 @@ __all__ = [
 ]
 
 
-class MrecError(Exception):
-    """Base exception for mrec-cli."""
+class HarkError(Exception):
+    """Base exception for hark."""
 
     pass
 
 
-class ConfigError(MrecError):
+class ConfigError(HarkError):
     """Configuration-related errors."""
 
     pass
@@ -44,7 +44,7 @@ class ConfigValidationError(ConfigError):
         super().__init__(f"Configuration validation failed: {'; '.join(errors)}")
 
 
-class AudioError(MrecError):
+class AudioError(HarkError):
     """Audio recording/processing errors."""
 
     pass
@@ -68,13 +68,13 @@ class RecordingTooShortError(AudioError):
     pass
 
 
-class PreprocessingError(MrecError):
+class PreprocessingError(HarkError):
     """Audio preprocessing errors."""
 
     pass
 
 
-class TranscriptionError(MrecError):
+class TranscriptionError(HarkError):
     """Transcription-related errors."""
 
     pass
@@ -92,7 +92,7 @@ class ModelDownloadError(TranscriptionError):
     pass
 
 
-class InsufficientDiskSpaceError(MrecError):
+class InsufficientDiskSpaceError(HarkError):
     """Insufficient disk space for operation."""
 
     def __init__(self, required_mb: float, available_mb: float) -> None:
@@ -103,7 +103,7 @@ class InsufficientDiskSpaceError(MrecError):
         )
 
 
-class OutputError(MrecError):
+class OutputError(HarkError):
     """Output-related errors."""
 
     pass

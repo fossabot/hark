@@ -1,4 +1,4 @@
-"""Integration tests for mrec-cli.
+"""Integration tests for hark.
 
 These tests use small generated audio files to test the full preprocessing
 and formatting pipelines without mocking internal components.
@@ -12,16 +12,16 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from mrec_cli.config import (
-    MrecConfig,
+from hark.config import (
+    HarkConfig,
     NoiseReductionConfig,
     NormalizationConfig,
     PreprocessingConfig,
     SilenceTrimmingConfig,
 )
-from mrec_cli.formatter import MarkdownFormatter, PlainFormatter, SRTFormatter, get_formatter
-from mrec_cli.preprocessor import AudioPreprocessor, PreprocessingResult
-from mrec_cli.transcriber import TranscriptionResult, TranscriptionSegment
+from hark.formatter import MarkdownFormatter, PlainFormatter, SRTFormatter, get_formatter
+from hark.preprocessor import AudioPreprocessor, PreprocessingResult
+from hark.transcriber import TranscriptionResult, TranscriptionSegment
 
 
 @pytest.fixture
@@ -269,10 +269,10 @@ class TestConfigIntegration:
     """Integration tests for configuration system."""
 
     def test_default_config_valid(self) -> None:
-        """Default MrecConfig should pass validation."""
-        from mrec_cli.config import validate_config
+        """Default HarkConfig should pass validation."""
+        from hark.config import validate_config
 
-        config = MrecConfig()
+        config = HarkConfig()
         errors = validate_config(config)
         assert errors == []
 
@@ -280,9 +280,9 @@ class TestConfigIntegration:
         """CLI args merge should preserve unset values."""
         import argparse
 
-        from mrec_cli.config import merge_cli_args
+        from hark.config import merge_cli_args
 
-        config = MrecConfig()
+        config = HarkConfig()
         original_model = config.whisper.model
 
         # Args with no model specified

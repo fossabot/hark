@@ -3,7 +3,6 @@
 from pathlib import Path
 
 __all__ = [
-    "VERSION",
     "DEFAULT_SAMPLE_RATE",
     "DEFAULT_CHANNELS",
     "DEFAULT_BIT_DEPTH",
@@ -30,9 +29,6 @@ __all__ = [
     "MIN_RECORDING_DURATION",
 ]
 
-# Version
-VERSION = "0.1.0"
-
 # Audio recording defaults
 DEFAULT_SAMPLE_RATE = 16000  # Whisper's expected sample rate
 DEFAULT_CHANNELS = 1
@@ -57,11 +53,11 @@ VALID_OUTPUT_FORMATS = ["plain", "markdown", "srt"]
 DEFAULT_ENCODING = "utf-8"
 
 # Paths
-DEFAULT_CONFIG_DIR = Path.home() / ".config" / "mrec"
+DEFAULT_CONFIG_DIR = Path.home() / ".config" / "hark"
 DEFAULT_CONFIG_PATH = DEFAULT_CONFIG_DIR / "config.yaml"
-DEFAULT_CACHE_DIR = Path.home() / ".cache" / "mrec"
+DEFAULT_CACHE_DIR = Path.home() / ".cache" / "hark"
 DEFAULT_MODEL_CACHE_DIR = DEFAULT_CACHE_DIR / "models"
-DEFAULT_TEMP_DIR = Path("/tmp/mrec")
+DEFAULT_TEMP_DIR = Path("/tmp/hark")
 
 # Exit codes
 EXIT_SUCCESS = 0

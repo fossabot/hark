@@ -1,17 +1,17 @@
-"""Tests for mrec_cli.exceptions module."""
+"""Tests for hark.exceptions module."""
 
 import pytest
 
-from mrec_cli.exceptions import (
+from hark.exceptions import (
     AudioDeviceBusyError,
     AudioError,
     ConfigError,
     ConfigNotFoundError,
     ConfigValidationError,
+    HarkError,
     InsufficientDiskSpaceError,
     ModelDownloadError,
     ModelNotFoundError,
-    MrecError,
     NoMicrophoneError,
     OutputError,
     PreprocessingError,
@@ -23,13 +23,13 @@ from mrec_cli.exceptions import (
 class TestExceptionHierarchy:
     """Tests for exception inheritance hierarchy."""
 
-    def test_mrec_error_is_base_exception(self) -> None:
-        """MrecError should inherit from Exception."""
-        assert issubclass(MrecError, Exception)
+    def test_hark_error_is_base_exception(self) -> None:
+        """HarkError should inherit from Exception."""
+        assert issubclass(HarkError, Exception)
 
-    def test_config_error_inherits_mrec_error(self) -> None:
-        """ConfigError should inherit from MrecError."""
-        assert issubclass(ConfigError, MrecError)
+    def test_config_error_inherits_hark_error(self) -> None:
+        """ConfigError should inherit from HarkError."""
+        assert issubclass(ConfigError, HarkError)
 
     def test_config_not_found_inherits_config_error(self) -> None:
         """ConfigNotFoundError should inherit from ConfigError."""
@@ -39,9 +39,9 @@ class TestExceptionHierarchy:
         """ConfigValidationError should inherit from ConfigError."""
         assert issubclass(ConfigValidationError, ConfigError)
 
-    def test_audio_error_inherits_mrec_error(self) -> None:
-        """AudioError should inherit from MrecError."""
-        assert issubclass(AudioError, MrecError)
+    def test_audio_error_inherits_hark_error(self) -> None:
+        """AudioError should inherit from HarkError."""
+        assert issubclass(AudioError, HarkError)
 
     def test_no_microphone_inherits_audio_error(self) -> None:
         """NoMicrophoneError should inherit from AudioError."""
@@ -55,13 +55,13 @@ class TestExceptionHierarchy:
         """RecordingTooShortError should inherit from AudioError."""
         assert issubclass(RecordingTooShortError, AudioError)
 
-    def test_preprocessing_error_inherits_mrec_error(self) -> None:
-        """PreprocessingError should inherit from MrecError."""
-        assert issubclass(PreprocessingError, MrecError)
+    def test_preprocessing_error_inherits_hark_error(self) -> None:
+        """PreprocessingError should inherit from HarkError."""
+        assert issubclass(PreprocessingError, HarkError)
 
-    def test_transcription_error_inherits_mrec_error(self) -> None:
-        """TranscriptionError should inherit from MrecError."""
-        assert issubclass(TranscriptionError, MrecError)
+    def test_transcription_error_inherits_hark_error(self) -> None:
+        """TranscriptionError should inherit from HarkError."""
+        assert issubclass(TranscriptionError, HarkError)
 
     def test_model_not_found_inherits_transcription_error(self) -> None:
         """ModelNotFoundError should inherit from TranscriptionError."""
@@ -71,13 +71,13 @@ class TestExceptionHierarchy:
         """ModelDownloadError should inherit from TranscriptionError."""
         assert issubclass(ModelDownloadError, TranscriptionError)
 
-    def test_output_error_inherits_mrec_error(self) -> None:
-        """OutputError should inherit from MrecError."""
-        assert issubclass(OutputError, MrecError)
+    def test_output_error_inherits_hark_error(self) -> None:
+        """OutputError should inherit from HarkError."""
+        assert issubclass(OutputError, HarkError)
 
-    def test_insufficient_disk_space_inherits_mrec_error(self) -> None:
-        """InsufficientDiskSpaceError should inherit from MrecError."""
-        assert issubclass(InsufficientDiskSpaceError, MrecError)
+    def test_insufficient_disk_space_inherits_hark_error(self) -> None:
+        """InsufficientDiskSpaceError should inherit from HarkError."""
+        assert issubclass(InsufficientDiskSpaceError, HarkError)
 
 
 class TestConfigValidationError:
@@ -153,9 +153,9 @@ class TestInsufficientDiskSpaceError:
 class TestAllExceptionsInstantiable:
     """Tests that all exception classes can be instantiated."""
 
-    def test_mrec_error_instantiation(self) -> None:
-        """MrecError should be instantiable."""
-        err = MrecError("Test error")
+    def test_hark_error_instantiation(self) -> None:
+        """HarkError should be instantiable."""
+        err = HarkError("Test error")
         assert str(err) == "Test error"
 
     def test_config_error_instantiation(self) -> None:
@@ -217,10 +217,10 @@ class TestAllExceptionsInstantiable:
 class TestExceptionRaising:
     """Tests that exceptions can be raised and caught correctly."""
 
-    def test_catch_as_mrec_error(self) -> None:
-        """All exceptions should be catchable as MrecError."""
+    def test_catch_as_hark_error(self) -> None:
+        """All exceptions should be catchable as HarkError."""
         exceptions_to_test = [
-            MrecError("test"),
+            HarkError("test"),
             ConfigError("test"),
             ConfigNotFoundError("test"),
             ConfigValidationError(["test"]),
@@ -237,7 +237,7 @@ class TestExceptionRaising:
         ]
 
         for exc in exceptions_to_test:
-            with pytest.raises(MrecError):
+            with pytest.raises(HarkError):
                 raise exc
 
     def test_catch_specific_type(self) -> None:
@@ -255,17 +255,17 @@ class TestExceptionRaising:
             try:
                 raise original
             except ValueError as e:
-                raise MrecError("Wrapped error") from e
-        except MrecError as err:
+                raise HarkError("Wrapped error") from e
+        except HarkError as err:
             assert err.__cause__ is original
 
 
 class TestExceptionRepr:
     """Tests for exception string representations."""
 
-    def test_mrec_error_str(self) -> None:
-        """MrecError should have meaningful __str__."""
-        err = MrecError("Meaningful message")
+    def test_hark_error_str(self) -> None:
+        """HarkError should have meaningful __str__."""
+        err = HarkError("Meaningful message")
         assert str(err) == "Meaningful message"
 
     def test_config_validation_error_str_includes_prefix(self) -> None:

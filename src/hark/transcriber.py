@@ -8,9 +8,9 @@ from pathlib import Path
 
 import numpy as np
 
-from mrec_cli.constants import DEFAULT_MODEL_CACHE_DIR, VALID_MODELS
-from mrec_cli.device import detect_best_device, get_compute_type
-from mrec_cli.exceptions import ModelDownloadError, ModelNotFoundError, TranscriptionError
+from hark.constants import DEFAULT_MODEL_CACHE_DIR, VALID_MODELS
+from hark.device import detect_best_device, get_compute_type
+from hark.exceptions import ModelDownloadError, ModelNotFoundError, TranscriptionError
 
 __all__ = [
     "WordSegment",

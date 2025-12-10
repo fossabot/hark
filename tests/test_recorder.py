@@ -1,4 +1,4 @@
-"""Tests for mrec_cli.recorder module."""
+"""Tests for hark.recorder module."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ import numpy as np
 import pytest
 import sounddevice as sd
 
-from mrec_cli.exceptions import AudioDeviceBusyError, NoMicrophoneError
-from mrec_cli.recorder import AudioRecorder
+from hark.exceptions import AudioDeviceBusyError, NoMicrophoneError
+from hark.recorder import AudioRecorder
 
 
 class TestAudioRecorderInit:

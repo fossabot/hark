@@ -1,4 +1,4 @@
-"""Tests for mrec_cli.ui module."""
+"""Tests for hark.ui module."""
 
 from __future__ import annotations
 
@@ -8,9 +8,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mrec_cli.config import MrecConfig
-from mrec_cli.transcriber import TranscriptionResult
-from mrec_cli.ui import UI, Color
+from hark.config import HarkConfig
+from hark.transcriber import TranscriptionResult
+from hark.ui import UI, Color
 
 
 class TestColorEnum:
@@ -78,7 +78,7 @@ class TestUIQuietMode:
         captured = capsys.readouterr()
         assert captured.out == ""
 
-    def test_config_summary_quiet(self, quiet_ui: UI, default_config: MrecConfig, capsys) -> None:
+    def test_config_summary_quiet(self, quiet_ui: UI, default_config: HarkConfig, capsys) -> None:
         """config_summary should produce no output in quiet mode."""
         quiet_ui.config_summary(default_config, "output.txt")
         captured = capsys.readouterr()
@@ -148,7 +148,7 @@ class TestUIOutput:
         assert "Test Title" in captured.out
         assert "=" in captured.out
 
-    def test_config_summary_output(self, ui: UI, default_config: MrecConfig, capsys) -> None:
+    def test_config_summary_output(self, ui: UI, default_config: HarkConfig, capsys) -> None:
         """config_summary should print config details."""
         ui.config_summary(default_config, "output.txt")
         captured = capsys.readouterr()
@@ -157,7 +157,7 @@ class TestUIOutput:
         assert "Model" in captured.out
         assert "output.txt" in captured.out
 
-    def test_config_summary_stdout_output(self, ui: UI, default_config: MrecConfig, capsys) -> None:
+    def test_config_summary_stdout_output(self, ui: UI, default_config: HarkConfig, capsys) -> None:
         """config_summary should show 'stdout' when no output file."""
         ui.config_summary(default_config, None)
         captured = capsys.readouterr()

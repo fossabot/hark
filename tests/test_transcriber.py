@@ -1,4 +1,4 @@
-"""Tests for mrec_cli.transcriber module."""
+"""Tests for hark.transcriber module."""
 
 from __future__ import annotations
 
@@ -8,9 +8,9 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-from mrec_cli.constants import VALID_MODELS
-from mrec_cli.exceptions import ModelDownloadError, ModelNotFoundError, TranscriptionError
-from mrec_cli.transcriber import (
+from hark.constants import VALID_MODELS
+from hark.exceptions import ModelDownloadError, ModelNotFoundError, TranscriptionError
+from hark.transcriber import (
     Transcriber,
     TranscriptionResult,
     TranscriptionSegment,
@@ -59,7 +59,7 @@ class TestLoadModel:
         mock_whisper = MagicMock()
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu") as mock_detect,
+            patch("hark.transcriber.detect_best_device", return_value="cpu") as mock_detect,
             patch.dict("sys.modules", {"faster_whisper": mock_whisper}),
         ):
             transcriber = Transcriber(device="auto")
@@ -71,7 +71,7 @@ class TestLoadModel:
         mock_whisper = MagicMock()
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="vulkan"),
+            patch("hark.transcriber.detect_best_device", return_value="vulkan"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper}),
         ):
             transcriber = Transcriber(device="auto")
@@ -84,7 +84,7 @@ class TestLoadModel:
         cache_dir = tmp_path / "new_cache" / "models"
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper}),
         ):
             transcriber = Transcriber(model_cache_dir=cache_dir)
@@ -98,7 +98,7 @@ class TestLoadModel:
         mock_whisper_module.WhisperModel = mock_model_class
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber(model_name="small", device="cpu")
@@ -126,7 +126,7 @@ class TestLoadModel:
         mock_whisper_module.WhisperModel.side_effect = Exception("Network download failed")
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -139,7 +139,7 @@ class TestLoadModel:
         mock_whisper_module.WhisperModel.side_effect = Exception("Generic error")
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -156,7 +156,7 @@ class TestTranscribe:
         mock_whisper_module = MagicMock()
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -177,7 +177,7 @@ class TestTranscribe:
         mock_model.transcribe.return_value = (iter([]), mock_info)
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -197,7 +197,7 @@ class TestTranscribe:
         mock_model.transcribe.return_value = (iter([]), mock_info)
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
             patch("librosa.resample") as mock_resample,
         ):
@@ -225,7 +225,7 @@ class TestTranscribe:
         int16_audio = (sample_audio * 32767).astype(np.int16)
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -245,7 +245,7 @@ class TestTranscribe:
         mock_whisper_module.WhisperModel.return_value = mock_whisper_model
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -282,7 +282,7 @@ class TestTranscribe:
         mock_model.transcribe.return_value = (iter([mock_segment1, mock_segment2]), mock_info)
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -322,7 +322,7 @@ class TestTranscribe:
         mock_model.transcribe.return_value = (iter([mock_segment]), mock_info)
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -353,7 +353,7 @@ class TestTranscribe:
         callback = MagicMock()
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -381,7 +381,7 @@ class TestTranscribe:
         mock_model.transcribe.return_value = (iter([mock_segment]), mock_info)
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -402,7 +402,7 @@ class TestTranscribe:
         mock_model.transcribe.side_effect = RuntimeError("Transcription failed")
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -421,7 +421,7 @@ class TestTranscriberMethods:
         mock_whisper_module = MagicMock()
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cpu"),
+            patch("hark.transcriber.detect_best_device", return_value="cpu"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber()
@@ -433,7 +433,7 @@ class TestTranscriberMethods:
         mock_whisper_module = MagicMock()
 
         with (
-            patch("mrec_cli.transcriber.detect_best_device", return_value="cuda"),
+            patch("hark.transcriber.detect_best_device", return_value="cuda"),
             patch.dict("sys.modules", {"faster_whisper": mock_whisper_module}),
         ):
             transcriber = Transcriber(device="auto")

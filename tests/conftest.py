@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for mrec-cli tests."""
+"""Shared pytest fixtures for hark tests."""
 
 from __future__ import annotations
 
@@ -9,9 +9,9 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
-from mrec_cli.config import (
+from hark.config import (
+    HarkConfig,
     InterfaceConfig,
-    MrecConfig,
     NoiseReductionConfig,
     NormalizationConfig,
     OutputConfig,
@@ -20,7 +20,7 @@ from mrec_cli.config import (
     SilenceTrimmingConfig,
     WhisperConfig,
 )
-from mrec_cli.transcriber import TranscriptionResult, TranscriptionSegment, WordSegment
+from hark.transcriber import TranscriptionResult, TranscriptionSegment, WordSegment
 
 
 @pytest.fixture
@@ -120,15 +120,15 @@ def long_transcription_result() -> TranscriptionResult:
 
 
 @pytest.fixture
-def default_config() -> MrecConfig:
-    """Create a default MrecConfig for testing."""
-    return MrecConfig()
+def default_config() -> HarkConfig:
+    """Create a default HarkConfig for testing."""
+    return HarkConfig()
 
 
 @pytest.fixture
-def custom_config() -> MrecConfig:
-    """Create a custom MrecConfig with non-default values."""
-    return MrecConfig(
+def custom_config() -> HarkConfig:
+    """Create a custom HarkConfig with non-default values."""
+    return HarkConfig(
         recording=RecordingConfig(
             sample_rate=44100,
             channels=2,

@@ -1,15 +1,15 @@
-"""Tests for mrec_cli.formatter module."""
+"""Tests for hark.formatter module."""
 
 import pytest
 
-from mrec_cli.formatter import (
+from hark.formatter import (
     MarkdownFormatter,
     OutputFormatter,
     PlainFormatter,
     SRTFormatter,
     get_formatter,
 )
-from mrec_cli.transcriber import TranscriptionResult, TranscriptionSegment
+from hark.transcriber import TranscriptionResult, TranscriptionSegment
 
 
 class TestPlainFormatter:

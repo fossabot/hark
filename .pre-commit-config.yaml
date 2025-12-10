@@ -23,7 +23,7 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
-        args: [src/mrec_cli/]
+        args: [src/hark/]
         verbose: true
 
       - id: pytest

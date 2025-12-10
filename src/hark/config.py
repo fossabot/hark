@@ -1,4 +1,4 @@
-"""Configuration management for mrec-cli."""
+"""Configuration management for hark."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ __all__ = [
     "PreprocessingConfig",
     "OutputConfig",
     "InterfaceConfig",
-    "MrecConfig",
+    "HarkConfig",
     "get_default_config_path",
     "load_config",
     "merge_cli_args",
@@ -27,7 +27,7 @@ __all__ = [
     "create_default_config_file",
 ]
 
-from mrec_cli.constants import (
+from hark.constants import (
     DEFAULT_CHANNELS,
     DEFAULT_CONFIG_DIR,
     DEFAULT_CONFIG_PATH,
@@ -46,7 +46,7 @@ from mrec_cli.constants import (
     VALID_MODELS,
     VALID_OUTPUT_FORMATS,
 )
-from mrec_cli.exceptions import ConfigError
+from hark.exceptions import ConfigError
 
 
 @dataclass
@@ -121,7 +121,7 @@ class InterfaceConfig:
 
 
 @dataclass
-class MrecConfig:
+class HarkConfig:
     """Main configuration class."""
 
     recording: RecordingConfig = field(default_factory=RecordingConfig)
@@ -138,9 +138,9 @@ def get_default_config_path() -> Path:
     return DEFAULT_CONFIG_PATH
 
 
-def _dict_to_config(data: dict[str, Any]) -> MrecConfig:
-    """Convert a dictionary to MrecConfig."""
-    config = MrecConfig()
+def _dict_to_config(data: dict[str, Any]) -> HarkConfig:
+    """Convert a dictionary to HarkConfig."""
+    config = HarkConfig()
 
     if "recording" in data:
         rec = data["recording"]
@@ -210,7 +210,7 @@ def _dict_to_config(data: dict[str, Any]) -> MrecConfig:
     return config
 
 
-def load_config(config_path: Path | None = None) -> MrecConfig:
+def load_config(config_path: Path | None = None) -> HarkConfig:
     """
     Load configuration from YAML file.
 
@@ -218,7 +218,7 @@ def load_config(config_path: Path | None = None) -> MrecConfig:
         config_path: Path to config file. If None, uses default path.
 
     Returns:
-        MrecConfig with loaded or default values.
+        HarkConfig with loaded or default values.
 
     Raises:
         ConfigError: If config file exists but cannot be parsed.
@@ -226,14 +226,14 @@ def load_config(config_path: Path | None = None) -> MrecConfig:
     path = config_path or get_default_config_path()
 
     if not path.exists():
-        return MrecConfig()
+        return HarkConfig()
 
     try:
         with open(path) as f:
             data = yaml.safe_load(f)
 
         if data is None:
-            return MrecConfig()
+            return HarkConfig()
 
         return _dict_to_config(data)
 
@@ -243,7 +243,7 @@ def load_config(config_path: Path | None = None) -> MrecConfig:
         raise ConfigError(f"Failed to read config file {path}: {e}") from e
 
 
-def merge_cli_args(config: MrecConfig, args: argparse.Namespace) -> MrecConfig:
+def merge_cli_args(config: HarkConfig, args: argparse.Namespace) -> HarkConfig:
     """
     Merge CLI arguments into config (CLI takes precedence).
 
@@ -295,7 +295,7 @@ def merge_cli_args(config: MrecConfig, args: argparse.Namespace) -> MrecConfig:
     return config
 
 
-def validate_config(config: MrecConfig) -> list[str]:
+def validate_config(config: HarkConfig) -> list[str]:
     """
     Validate configuration values.
 
@@ -342,7 +342,7 @@ def validate_config(config: MrecConfig) -> list[str]:
     return errors
 
 
-def ensure_directories(config: MrecConfig) -> None:
+def ensure_directories(config: HarkConfig) -> None:
     """
     Create necessary directories if they don't exist.
 
@@ -368,8 +368,7 @@ def create_default_config_file(path: Path | None = None) -> Path:
     config_path.parent.mkdir(parents=True, exist_ok=True)
 
     default_config = """\
-# MREC-CLI Configuration
-# See CLI_SPECIFICATION.md for full documentation
+# Hark Configuration
 
 # Audio Recording Settings
 recording:
@@ -413,11 +412,11 @@ interface:
 
 # Performance Settings
 performance:
-  temp_directory: /tmp/mrec
+  temp_directory: /tmp/hark
 
 # Cache Settings
 cache:
-  model_cache_dir: ~/.cache/mrec/models
+  model_cache_dir: ~/.cache/hark/models
 """
 
     with open(config_path, "w") as f:

@@ -1,4 +1,4 @@
-"""Main CLI entry point for mrec-cli."""
+"""Main CLI entry point for hark."""
 
 from __future__ import annotations
 
@@ -15,15 +15,15 @@ __all__ = [
     "main",
 ]
 
-from mrec_cli import __version__
-from mrec_cli.config import (
-    MrecConfig,
+from hark import __version__
+from hark.config import (
+    HarkConfig,
     ensure_directories,
     load_config,
     merge_cli_args,
     validate_config,
 )
-from mrec_cli.constants import (
+from hark.constants import (
     EXIT_ERROR,
     EXIT_INTERRUPT,
     EXIT_SUCCESS,
@@ -31,29 +31,29 @@ from mrec_cli.constants import (
     VALID_MODELS,
     VALID_OUTPUT_FORMATS,
 )
-from mrec_cli.exceptions import MrecError
-from mrec_cli.formatter import get_formatter
-from mrec_cli.keypress import KeypressHandler
-from mrec_cli.preprocessor import AudioPreprocessor
-from mrec_cli.recorder import AudioRecorder
-from mrec_cli.transcriber import Transcriber, TranscriptionResult
-from mrec_cli.ui import UI
+from hark.exceptions import HarkError
+from hark.formatter import get_formatter
+from hark.keypress import KeypressHandler
+from hark.preprocessor import AudioPreprocessor
+from hark.recorder import AudioRecorder
+from hark.transcriber import Transcriber, TranscriptionResult
+from hark.ui import UI
 
 
 def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser."""
     parser = argparse.ArgumentParser(
-        prog="mrec-cli",
+        prog="hark",
         description="Speech-to-text recording and transcription",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
 Examples:
-  mrec-cli                          Record and output to stdout
-  mrec-cli output.txt               Record and save to file
-  mrec-cli --lang de speech.md      Record with German language
-  mrec-cli --model large-v3 out.txt Use large model for better accuracy
-  mrec-cli --timestamps notes.md    Include timestamps in output
-  mrec-cli --format srt subs.srt    Output as SRT subtitles
+  hark                          Record and output to stdout
+  hark output.txt               Record and save to file
+  hark --lang de speech.md      Record with German language
+  hark --model large-v3 out.txt Use large model for better accuracy
+  hark --timestamps notes.md    Include timestamps in output
+  hark --format srt subs.srt    Output as SRT subtitles
 """,
     )
 
@@ -194,7 +194,7 @@ def _wait_for_start_signal(ui: UI) -> bool:
         return False
 
 
-def _record_audio(ui: UI, config: MrecConfig) -> tuple[Path, float] | None:
+def _record_audio(ui: UI, config: HarkConfig) -> tuple[Path, float] | None:
     """
     Record audio from microphone.
 
@@ -243,7 +243,7 @@ def _record_audio(ui: UI, config: MrecConfig) -> tuple[Path, float] | None:
     return audio_path, duration
 
 
-def _preprocess_audio(ui: UI, config: MrecConfig, audio_path: Path) -> tuple[np.ndarray, float]:
+def _preprocess_audio(ui: UI, config: HarkConfig, audio_path: Path) -> tuple[np.ndarray, float]:
     """
     Preprocess recorded audio.
 
@@ -274,7 +274,7 @@ def _preprocess_audio(ui: UI, config: MrecConfig, audio_path: Path) -> tuple[np.
     return processed_audio, preprocess_result.silence_trimmed_seconds
 
 
-def _transcribe_audio(ui: UI, config: MrecConfig, audio: np.ndarray) -> TranscriptionResult:
+def _transcribe_audio(ui: UI, config: HarkConfig, audio: np.ndarray) -> TranscriptionResult:
     """
     Load model and transcribe audio.
 
@@ -312,7 +312,7 @@ def _transcribe_audio(ui: UI, config: MrecConfig, audio: np.ndarray) -> Transcri
 
 def _write_output(
     ui: UI,
-    config: MrecConfig,
+    config: HarkConfig,
     result: TranscriptionResult,
     output_file: str | None,
 ) -> None:
@@ -346,7 +346,7 @@ def _write_output(
             ui.transcription_complete(result, None)
 
 
-def run_workflow(config: MrecConfig, output_file: str | None, ui: UI, verbose: bool) -> int:
+def run_workflow(config: HarkConfig, output_file: str | None, ui: UI, verbose: bool) -> int:
     """
     Run the main recording/transcription workflow.
 
@@ -360,7 +360,7 @@ def run_workflow(config: MrecConfig, output_file: str | None, ui: UI, verbose: b
         Exit code.
     """
     # Display header and config
-    ui.header("MREC-CLI - Speech-to-Text Recording")
+    ui.header("Hark - Speech-to-Text Recording")
     ui.config_summary(config, output_file)
 
     # Wait for user to start
@@ -437,7 +437,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         ui.info("\nCancelled.")
         return EXIT_INTERRUPT
-    except MrecError as e:
+    except HarkError as e:
         ui.error(str(e))
         return EXIT_ERROR
     except Exception as e:

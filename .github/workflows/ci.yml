@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync --extra test
+
+      - name: Ruff check
+        run: uv run ruff check src/ tests/
+
+      - name: Ruff format
+        run: uv run ruff format --check src/ tests/
+
+      - name: Pyrefly type check
+        run: uv run pyrefly check src/hark/
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libportaudio2
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --extra test
+
+      - name: Run tests
+        run: uv run pytest tests/ -x --tb=short

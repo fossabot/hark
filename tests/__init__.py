@@ -1,1 +1,1 @@
-"""Unit tests for mrec-cli."""
+"""Unit tests for hark."""

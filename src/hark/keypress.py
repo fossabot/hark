@@ -1,4 +1,4 @@
-"""Terminal keypress detection for mrec-cli."""
+"""Terminal keypress detection for hark."""
 
 from __future__ import annotations
 

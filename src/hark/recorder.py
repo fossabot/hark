@@ -1,4 +1,4 @@
-"""Audio recording for mrec-cli."""
+"""Audio recording for hark."""
 
 from __future__ import annotations
 
@@ -14,8 +14,8 @@ import numpy as np
 import sounddevice as sd
 import soundfile as sf
 
-from mrec_cli.constants import DEFAULT_BUFFER_SIZE, DEFAULT_TEMP_DIR
-from mrec_cli.exceptions import AudioDeviceBusyError, NoMicrophoneError
+from hark.constants import DEFAULT_BUFFER_SIZE, DEFAULT_TEMP_DIR
+from hark.exceptions import AudioDeviceBusyError, NoMicrophoneError
 
 __all__ = [
     "AudioDeviceInfo",

@@ -1,22 +1,23 @@
 [project]
-name = "mrec-cli"
-version = "0.1.0"
-description = "Command-line speech-to-text recording and transcription"
+name = "hark-cli"
+dynamic = ["version"]
+description = "100% offline, Whisper-powered voice notes from your terminal"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "AGPL-3.0-or-later"}
-keywords = ["speech-to-text", "transcription", "whisper", "audio", "cli"]
+keywords = ["speech-to-text", "transcription", "whisper", "voice-notes", "cli", "offline", "faster-whisper"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Multimedia :: Sound/Audio :: Speech",
 ]
-
 dependencies = [
     # Core audio
     "sounddevice>=0.5.0",
@@ -43,19 +44,26 @@ test = [
     "pre-commit>=3.0.0",
 ]
 dev = [
-    "mrec-cli[test]",
-    "mypy>=1.0.0",
+    "hark-cli[test]",
 ]
 
 [project.scripts]
-mrec-cli = "mrec_cli.cli:main"
+hark = "hark.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/FPurchess/hark"
+Repository = "https://github.com/FPurchess/hark"
+Issues = "https://github.com/FPurchess/hark/issues"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mrec_cli"]
+packages = ["src/hark"]
+
+[tool.hatch.version]
+path = "src/hark/__init__.py"
 
 [tool.ruff]
 line-length = 100
@@ -67,11 +75,6 @@ select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["SIM117"]  # Allow nested with statements in tests for readability
 
-[tool.mypy]
-python_version = "3.11"
-strict = true
-warn_return_any = true
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --cov=src/mrec_cli"
+addopts = "-v --cov=src/hark"

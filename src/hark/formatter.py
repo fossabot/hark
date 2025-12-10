@@ -1,10 +1,10 @@
-"""Output formatters for mrec-cli."""
+"""Output formatters for hark."""
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from mrec_cli.transcriber import TranscriptionResult
+from hark.transcriber import TranscriptionResult
 
 __all__ = [
     "OutputFormatter",

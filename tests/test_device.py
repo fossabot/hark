@@ -1,11 +1,11 @@
-"""Tests for mrec_cli.device module."""
+"""Tests for hark.device module."""
 
 from __future__ import annotations
 
 import subprocess
 from unittest.mock import MagicMock, patch
 
-from mrec_cli.device import (
+from hark.device import (
     check_cuda_support,
     check_pytorch_vulkan,
     check_vulkan_support,
@@ -102,7 +102,7 @@ class TestCheckCudaSupport:
 
         with patch.dict("sys.modules", {"torch": mock_torch}):
             # Need to reimport to pick up mock
-            from mrec_cli import device
+            from hark import device
 
             result = device.check_cuda_support()
             assert result == (True, "NVIDIA GeForce RTX 3080", (8, 6))
@@ -113,7 +113,7 @@ class TestCheckCudaSupport:
         mock_torch.cuda.is_available.return_value = False
 
         with patch.dict("sys.modules", {"torch": mock_torch}):
-            from mrec_cli import device
+            from hark import device
 
             result = device.check_cuda_support()
             assert result == (False, None, None)
@@ -132,7 +132,7 @@ class TestCheckCudaSupport:
         mock_torch.cuda.is_available.side_effect = RuntimeError("CUDA error")
 
         with patch.dict("sys.modules", {"torch": mock_torch}):
-            from mrec_cli import device
+            from hark import device
 
             result = device.check_cuda_support()
             assert result == (False, None, None)
@@ -151,7 +151,7 @@ class TestCheckPytorchVulkan:
         mock_torch.backends = mock_backends
 
         with patch.dict("sys.modules", {"torch": mock_torch}):
-            from mrec_cli import device
+            from hark import device
 
             result = device.check_pytorch_vulkan()
             assert result is True
@@ -166,7 +166,7 @@ class TestCheckPytorchVulkan:
         mock_torch.backends = mock_backends
 
         with patch.dict("sys.modules", {"torch": mock_torch}):
-            from mrec_cli import device
+            from hark import device
 
             result = device.check_pytorch_vulkan()
             assert result is False
@@ -180,7 +180,7 @@ class TestCheckPytorchVulkan:
         del mock_backends.vulkan
 
         with patch.dict("sys.modules", {"torch": mock_torch}):
-            from mrec_cli import device
+            from hark import device
 
             result = device.check_pytorch_vulkan()
             assert result is False
@@ -197,17 +197,17 @@ class TestDetectBestDevice:
 
     def test_vulkan_priority(self) -> None:
         """Should return 'vulkan' if both HW and PyTorch support exist."""
-        with patch("mrec_cli.device.check_vulkan_support", return_value=True):
-            with patch("mrec_cli.device.check_pytorch_vulkan", return_value=True):
+        with patch("hark.device.check_vulkan_support", return_value=True):
+            with patch("hark.device.check_pytorch_vulkan", return_value=True):
                 result = detect_best_device()
                 assert result == "vulkan"
 
     def test_cuda_fallback_high_compute(self) -> None:
         """Should return 'cuda' if Vulkan unavailable but CUDA >= 7.0."""
-        with patch("mrec_cli.device.check_vulkan_support", return_value=False):
-            with patch("mrec_cli.device.check_pytorch_vulkan", return_value=False):
+        with patch("hark.device.check_vulkan_support", return_value=False):
+            with patch("hark.device.check_pytorch_vulkan", return_value=False):
                 with patch(
-                    "mrec_cli.device.check_cuda_support",
+                    "hark.device.check_cuda_support",
                     return_value=(True, "RTX 3080", (8, 6)),
                 ):
                     result = detect_best_device()
@@ -215,10 +215,10 @@ class TestDetectBestDevice:
 
     def test_cuda_low_compute_falls_to_cpu(self) -> None:
         """Should return 'cpu' if CUDA compute capability < 7.0."""
-        with patch("mrec_cli.device.check_vulkan_support", return_value=False):
-            with patch("mrec_cli.device.check_pytorch_vulkan", return_value=False):
+        with patch("hark.device.check_vulkan_support", return_value=False):
+            with patch("hark.device.check_pytorch_vulkan", return_value=False):
                 with patch(
-                    "mrec_cli.device.check_cuda_support",
+                    "hark.device.check_cuda_support",
                     return_value=(True, "GTX 1050", (6, 1)),
                 ):
                     result = detect_best_device()
@@ -226,10 +226,10 @@ class TestDetectBestDevice:
 
     def test_cpu_fallback(self) -> None:
         """Should return 'cpu' if no GPU available."""
-        with patch("mrec_cli.device.check_vulkan_support", return_value=False):
-            with patch("mrec_cli.device.check_pytorch_vulkan", return_value=False):
+        with patch("hark.device.check_vulkan_support", return_value=False):
+            with patch("hark.device.check_pytorch_vulkan", return_value=False):
                 with patch(
-                    "mrec_cli.device.check_cuda_support",
+                    "hark.device.check_cuda_support",
                     return_value=(False, None, None),
                 ):
                     result = detect_best_device()
@@ -237,10 +237,10 @@ class TestDetectBestDevice:
 
     def test_vulkan_hw_but_no_pytorch(self) -> None:
         """Should skip Vulkan if HW exists but no PyTorch support."""
-        with patch("mrec_cli.device.check_vulkan_support", return_value=True):
-            with patch("mrec_cli.device.check_pytorch_vulkan", return_value=False):
+        with patch("hark.device.check_vulkan_support", return_value=True):
+            with patch("hark.device.check_pytorch_vulkan", return_value=False):
                 with patch(
-                    "mrec_cli.device.check_cuda_support",
+                    "hark.device.check_cuda_support",
                     return_value=(False, None, None),
                 ):
                     result = detect_best_device()
@@ -248,10 +248,10 @@ class TestDetectBestDevice:
 
     def test_verbose_output(self, capsys) -> None:
         """Verbose mode should print detection messages."""
-        with patch("mrec_cli.device.check_vulkan_support", return_value=False):
-            with patch("mrec_cli.device.check_pytorch_vulkan", return_value=False):
+        with patch("hark.device.check_vulkan_support", return_value=False):
+            with patch("hark.device.check_pytorch_vulkan", return_value=False):
                 with patch(
-                    "mrec_cli.device.check_cuda_support",
+                    "hark.device.check_cuda_support",
                     return_value=(False, None, None),
                 ):
                     detect_best_device(verbose=True)
@@ -284,25 +284,25 @@ class TestGetDeviceInfo:
 
     def test_returns_dict(self) -> None:
         """Should return a dictionary."""
-        with patch("mrec_cli.device.check_vulkan_support", return_value=False):
-            with patch("mrec_cli.device.check_pytorch_vulkan", return_value=False):
+        with patch("hark.device.check_vulkan_support", return_value=False):
+            with patch("hark.device.check_pytorch_vulkan", return_value=False):
                 with patch(
-                    "mrec_cli.device.check_cuda_support",
+                    "hark.device.check_cuda_support",
                     return_value=(False, None, None),
                 ):
-                    with patch("mrec_cli.device.detect_best_device", return_value="cpu"):
+                    with patch("hark.device.detect_best_device", return_value="cpu"):
                         result = get_device_info()
                         assert isinstance(result, dict)
 
     def test_has_expected_keys(self) -> None:
         """Should have expected keys in result."""
-        with patch("mrec_cli.device.check_vulkan_support", return_value=False):
-            with patch("mrec_cli.device.check_pytorch_vulkan", return_value=False):
+        with patch("hark.device.check_vulkan_support", return_value=False):
+            with patch("hark.device.check_pytorch_vulkan", return_value=False):
                 with patch(
-                    "mrec_cli.device.check_cuda_support",
+                    "hark.device.check_cuda_support",
                     return_value=(False, None, None),
                 ):
-                    with patch("mrec_cli.device.detect_best_device", return_value="cpu"):
+                    with patch("hark.device.detect_best_device", return_value="cpu"):
                         result = get_device_info()
                         assert "vulkan_hardware" in result
                         assert "vulkan_pytorch" in result
@@ -311,36 +311,36 @@ class TestGetDeviceInfo:
 
     def test_compute_capability_format(self) -> None:
         """compute_capability should be formatted as 'X.Y' string."""
-        with patch("mrec_cli.device.check_vulkan_support", return_value=False):
-            with patch("mrec_cli.device.check_pytorch_vulkan", return_value=False):
+        with patch("hark.device.check_vulkan_support", return_value=False):
+            with patch("hark.device.check_pytorch_vulkan", return_value=False):
                 with patch(
-                    "mrec_cli.device.check_cuda_support",
+                    "hark.device.check_cuda_support",
                     return_value=(True, "RTX 3080", (8, 6)),
                 ):
-                    with patch("mrec_cli.device.detect_best_device", return_value="cuda"):
+                    with patch("hark.device.detect_best_device", return_value="cuda"):
                         result = get_device_info()
                         assert result["compute_capability"] == "8.6"
 
     def test_compute_capability_none_when_no_cuda(self) -> None:
         """compute_capability should be None when CUDA unavailable."""
-        with patch("mrec_cli.device.check_vulkan_support", return_value=False):
-            with patch("mrec_cli.device.check_pytorch_vulkan", return_value=False):
+        with patch("hark.device.check_vulkan_support", return_value=False):
+            with patch("hark.device.check_pytorch_vulkan", return_value=False):
                 with patch(
-                    "mrec_cli.device.check_cuda_support",
+                    "hark.device.check_cuda_support",
                     return_value=(False, None, None),
                 ):
-                    with patch("mrec_cli.device.detect_best_device", return_value="cpu"):
+                    with patch("hark.device.detect_best_device", return_value="cpu"):
                         result = get_device_info()
                         assert result["compute_capability"] is None
 
     def test_gpu_name_included(self) -> None:
         """Should include GPU name when available."""
-        with patch("mrec_cli.device.check_vulkan_support", return_value=False):
-            with patch("mrec_cli.device.check_pytorch_vulkan", return_value=False):
+        with patch("hark.device.check_vulkan_support", return_value=False):
+            with patch("hark.device.check_pytorch_vulkan", return_value=False):
                 with patch(
-                    "mrec_cli.device.check_cuda_support",
+                    "hark.device.check_cuda_support",
                     return_value=(True, "Test GPU", (7, 5)),
                 ):
-                    with patch("mrec_cli.device.detect_best_device", return_value="cuda"):
+                    with patch("hark.device.detect_best_device", return_value="cuda"):
                         result = get_device_info()
                         assert result["gpu_name"] == "Test GPU"

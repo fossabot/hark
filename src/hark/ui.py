@@ -1,4 +1,4 @@
-"""Terminal UI for mrec-cli."""
+"""Terminal UI for hark."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from mrec_cli.config import MrecConfig
-    from mrec_cli.transcriber import TranscriptionResult
+    from hark.config import HarkConfig
+    from hark.transcriber import TranscriptionResult
 
 __all__ = [
     "Color",
@@ -77,7 +77,7 @@ class UI:
         print(self._color(title, Color.BOLD))
         print("=" * HEADER_WIDTH)
 
-    def config_summary(self, config: MrecConfig, output_file: str | None) -> None:
+    def config_summary(self, config: HarkConfig, output_file: str | None) -> None:
         """Print configuration summary."""
         if self._quiet:
             return

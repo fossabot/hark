@@ -1,9 +1,8 @@
-"""Tests for mrec_cli.constants module."""
+"""Tests for hark.constants module."""
 
-import re
 from pathlib import Path
 
-from mrec_cli.constants import (
+from hark.constants import (
     DEFAULT_BUFFER_SIZE,
     DEFAULT_CACHE_DIR,
     DEFAULT_CHANNELS,
@@ -27,22 +26,7 @@ from mrec_cli.constants import (
     MIN_RECORDING_DURATION,
     VALID_MODELS,
     VALID_OUTPUT_FORMATS,
-    VERSION,
 )
-
-
-class TestVersion:
-    """Tests for VERSION constant."""
-
-    def test_version_format(self) -> None:
-        """VERSION should be a valid semver string."""
-        # Basic semver pattern: X.Y.Z with optional pre-release
-        pattern = r"^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$"
-        assert re.match(pattern, VERSION), f"VERSION '{VERSION}' is not valid semver"
-
-    def test_version_is_string(self) -> None:
-        """VERSION should be a string."""
-        assert isinstance(VERSION, str)
 
 
 class TestValidModels:
@@ -142,13 +126,13 @@ class TestPathConstants:
         """DEFAULT_MODEL_CACHE_DIR should be under DEFAULT_CACHE_DIR."""
         assert DEFAULT_CACHE_DIR in DEFAULT_MODEL_CACHE_DIR.parents
 
-    def test_config_dir_contains_mrec(self) -> None:
-        """DEFAULT_CONFIG_DIR should contain 'mrec' in path."""
-        assert "mrec" in str(DEFAULT_CONFIG_DIR)
+    def test_config_dir_contains_hark(self) -> None:
+        """DEFAULT_CONFIG_DIR should contain 'hark' in path."""
+        assert "hark" in str(DEFAULT_CONFIG_DIR)
 
     def test_temp_dir_path(self) -> None:
-        """DEFAULT_TEMP_DIR should be /tmp/mrec."""
-        assert str(DEFAULT_TEMP_DIR) == "/tmp/mrec"
+        """DEFAULT_TEMP_DIR should be /tmp/hark."""
+        assert str(DEFAULT_TEMP_DIR) == "/tmp/hark"
 
 
 class TestAudioDefaults:

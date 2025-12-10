@@ -1,4 +1,4 @@
-"""Audio preprocessing for mrec-cli."""
+"""Audio preprocessing for hark."""
 
 from __future__ import annotations
 
@@ -10,8 +10,8 @@ import librosa
 import numpy as np
 import soundfile as sf
 
-from mrec_cli.config import PreprocessingConfig
-from mrec_cli.exceptions import PreprocessingError
+from hark.config import PreprocessingConfig
+from hark.exceptions import PreprocessingError
 
 __all__ = [
     "PreprocessingResult",

@@ -1,4 +1,4 @@
-"""Tests for mrec_cli.preprocessor module."""
+"""Tests for hark.preprocessor module."""
 
 from __future__ import annotations
 
@@ -8,14 +8,14 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-from mrec_cli.config import (
+from hark.config import (
     NoiseReductionConfig,
     NormalizationConfig,
     PreprocessingConfig,
     SilenceTrimmingConfig,
 )
-from mrec_cli.exceptions import PreprocessingError
-from mrec_cli.preprocessor import (
+from hark.exceptions import PreprocessingError
+from hark.preprocessor import (
     AudioPreprocessor,
     PreprocessingResult,
     normalize_audio,
@@ -34,7 +34,7 @@ class TestReduceNoise:
 
         with patch.dict("sys.modules", {"noisereduce": mock_nr}):
             # Need to reimport to pick up mock
-            from mrec_cli import preprocessor
+            from hark import preprocessor
 
             preprocessor.reduce_noise(sample_audio, 16000, strength=0.7)
 
@@ -50,7 +50,7 @@ class TestReduceNoise:
         mock_nr.reduce_noise.return_value = sample_audio
 
         with patch.dict("sys.modules", {"noisereduce": mock_nr}):
-            from mrec_cli import preprocessor
+            from hark import preprocessor
 
             preprocessor.reduce_noise(sample_audio, 16000, strength=0.0)
             call_kwargs = mock_nr.reduce_noise.call_args[1]
@@ -62,7 +62,7 @@ class TestReduceNoise:
         mock_nr.reduce_noise.return_value = sample_audio
 
         with patch.dict("sys.modules", {"noisereduce": mock_nr}):
-            from mrec_cli import preprocessor
+            from hark import preprocessor
 
             preprocessor.reduce_noise(sample_audio, 16000, strength=1.0)
             call_kwargs = mock_nr.reduce_noise.call_args[1]
@@ -80,7 +80,7 @@ class TestReduceNoise:
         mock_nr.reduce_noise.side_effect = RuntimeError("NR failed")
 
         with patch.dict("sys.modules", {"noisereduce": mock_nr}):
-            from mrec_cli import preprocessor
+            from hark import preprocessor
 
             with pytest.raises(PreprocessingError) as exc_info:
                 preprocessor.reduce_noise(sample_audio, 16000)
@@ -92,7 +92,7 @@ class TestReduceNoise:
         mock_nr.reduce_noise.return_value = sample_audio.astype(np.float64)
 
         with patch.dict("sys.modules", {"noisereduce": mock_nr}):
-            from mrec_cli import preprocessor
+            from hark import preprocessor
 
             result = preprocessor.reduce_noise(sample_audio, 16000)
             assert result.dtype == np.float32
@@ -256,7 +256,7 @@ class TestAudioPreprocessor:
 
         with (
             patch("soundfile.read") as mock_read,
-            patch("mrec_cli.preprocessor.reduce_noise", return_value=np.zeros(16000)),
+            patch("hark.preprocessor.reduce_noise", return_value=np.zeros(16000)),
             patch("librosa.effects.split", return_value=np.array([[0, 16000]])),
         ):
             mock_read.return_value = (np.zeros(16000, dtype=np.float32), 16000)
@@ -271,7 +271,7 @@ class TestAudioPreprocessor:
 
         with patch("soundfile.read") as mock_read:
             mock_read.return_value = (stereo_audio, 16000)
-            with patch("mrec_cli.preprocessor.reduce_noise") as mock_nr:
+            with patch("hark.preprocessor.reduce_noise") as mock_nr:
                 mock_nr.return_value = np.zeros(16000, dtype=np.float32)
                 with patch("librosa.effects.split", return_value=np.array([[0, 16000]])):
                     preprocessor = AudioPreprocessor(full_config)
@@ -290,7 +290,7 @@ class TestAudioPreprocessor:
         with (
             patch("soundfile.read") as mock_read,
             patch("librosa.resample") as mock_resample,
-            patch("mrec_cli.preprocessor.reduce_noise", return_value=np.zeros(16000)),
+            patch("hark.preprocessor.reduce_noise", return_value=np.zeros(16000)),
             patch("librosa.effects.split", return_value=np.array([[0, 16000]])),
         ):
             mock_read.return_value = (audio_48k, 48000)  # 48kHz file
@@ -309,7 +309,7 @@ class TestAudioPreprocessor:
         """Should apply noise reduction when enabled in config."""
         with (
             patch("soundfile.read") as mock_read,
-            patch("mrec_cli.preprocessor.reduce_noise") as mock_nr,
+            patch("hark.preprocessor.reduce_noise") as mock_nr,
             patch("librosa.effects.split", return_value=np.array([[0, 16000]])),
         ):
             mock_read.return_value = (np.zeros(16000, dtype=np.float32), 16000)
@@ -326,8 +326,8 @@ class TestAudioPreprocessor:
         """Should apply normalization when enabled in config."""
         with (
             patch("soundfile.read") as mock_read,
-            patch("mrec_cli.preprocessor.reduce_noise", return_value=np.zeros(16000)),
-            patch("mrec_cli.preprocessor.normalize_audio") as mock_norm,
+            patch("hark.preprocessor.reduce_noise", return_value=np.zeros(16000)),
+            patch("hark.preprocessor.normalize_audio") as mock_norm,
             patch("librosa.effects.split", return_value=np.array([[0, 16000]])),
         ):
             mock_read.return_value = (np.zeros(16000, dtype=np.float32), 16000)
@@ -344,8 +344,8 @@ class TestAudioPreprocessor:
         """Should apply silence trimming when enabled in config."""
         with (
             patch("soundfile.read") as mock_read,
-            patch("mrec_cli.preprocessor.reduce_noise", return_value=np.zeros(16000)),
-            patch("mrec_cli.preprocessor.trim_silence") as mock_trim,
+            patch("hark.preprocessor.reduce_noise", return_value=np.zeros(16000)),
+            patch("hark.preprocessor.trim_silence") as mock_trim,
         ):
             mock_read.return_value = (np.zeros(16000, dtype=np.float32), 16000)
             mock_trim.return_value = (np.zeros(8000, dtype=np.float32), 0.5)
@@ -361,9 +361,9 @@ class TestAudioPreprocessor:
         """Should skip disabled preprocessing steps."""
         with (
             patch("soundfile.read") as mock_read,
-            patch("mrec_cli.preprocessor.reduce_noise") as mock_nr,
-            patch("mrec_cli.preprocessor.normalize_audio") as mock_norm,
-            patch("mrec_cli.preprocessor.trim_silence") as mock_trim,
+            patch("hark.preprocessor.reduce_noise") as mock_nr,
+            patch("hark.preprocessor.normalize_audio") as mock_norm,
+            patch("hark.preprocessor.trim_silence") as mock_trim,
         ):
             mock_read.return_value = (np.zeros(16000, dtype=np.float32), 16000)
             preprocessor = AudioPreprocessor(disabled_config)
@@ -384,7 +384,7 @@ class TestAudioPreprocessor:
 
         with (
             patch("soundfile.read") as mock_read,
-            patch("mrec_cli.preprocessor.reduce_noise", return_value=np.zeros(16000)),
+            patch("hark.preprocessor.reduce_noise", return_value=np.zeros(16000)),
             patch("librosa.effects.split", return_value=np.array([[0, 16000]])),
         ):
             mock_read.return_value = (np.zeros(16000, dtype=np.float32), 16000)
@@ -400,7 +400,7 @@ class TestAudioPreprocessor:
         """Should return populated PreprocessingResult."""
         with (
             patch("soundfile.read") as mock_read,
-            patch("mrec_cli.preprocessor.reduce_noise", return_value=np.zeros(16000)),
+            patch("hark.preprocessor.reduce_noise", return_value=np.zeros(16000)),
             patch("librosa.effects.split", return_value=np.array([[0, 16000]])),
         ):
             mock_read.return_value = (np.zeros(16000, dtype=np.float32), 16000)

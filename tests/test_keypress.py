@@ -1,4 +1,4 @@
-"""Tests for mrec_cli.keypress module."""
+"""Tests for hark.keypress module."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import io
 import sys
 from unittest.mock import MagicMock, patch
 
-from mrec_cli.keypress import (
+from hark.keypress import (
     KeypressHandler,
     check_keypress_nowait,
     raw_terminal,
